@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.dagger.hilt.android)
 }
 
 android {
@@ -17,6 +19,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] =
+                    "$projectDir/schemas"
+            }
         }
     }
 
@@ -59,9 +67,36 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-//    app specific dependencies
+    implementation(libs.androidx.core.splashscreen)
+
+//coil
+    implementation(libs.coil.compose)
+
+//  hilt
+    implementation(libs.dagger.hilt)
+    implementation(libs.androidx.hilt.navigation.compose)
+    ksp(libs.androidx.hilt.compiler)
+    ksp(libs.dagger.compiler)
+
+//    room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.paging)
+    implementation(libs.androidx.room.ktx)
+    annotationProcessor(libs.androidx.room.compiler)
+    ksp(
+        libs.androidx.room.compiler
+    )
+
+//  gson
+    implementation(libs.google.gson)
+//    lifecycle
+    implementation(libs.androidx.lifecycle.livedata)
+    implementation(libs.androidx.lifecycle.viewmodel)
+//   play
     implementation(libs.google.android.play.document.scanner)
     implementation(libs.google.android.play.text.recognition)
+
+
 //    testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
