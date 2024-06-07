@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "466580214629",
+    "project_id": "learning-partner",
+    "storage_bucket": "learning-partner.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:466580214629:android:fdbd902ab3ff9ccefb478c",
+        "android_client_info": {
+          "package_name": "app.dfeverx.learningpartner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "466580214629-1ca7dqv6idqo97ofi6r05ve3a13fsbk9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.dfeverx.learningpartner",
+            "certificate_hash": "20adcd556530f3217119ccc0086cdd7786b9a0fa"
+          }
+        },
+        {
+          "client_id": "466580214629-v9b3r70e9tmbd135vf904fdideh32pc9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8FIhja3nB5Bi8nQhPCa27Gk_nvqmdJxc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "466580214629-v9b3r70e9tmbd135vf904fdideh32pc9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

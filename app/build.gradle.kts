@@ -3,17 +3,20 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.dagger.hilt.android)
+    id("kotlin-parcelize")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
-    namespace = "app.dfeverx.studypartner"
+    namespace = "app.dfeverx.learningpartner"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "app.dfeverx.studypartner"
+        applicationId = "app.dfeverx.learningpartner"
         minSdk = 25
         targetSdk = 34
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -68,17 +71,27 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.compose.icons)
 
-//coil
+//adaptive ui
+    implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.compose.adaptive.layout)
+    implementation(libs.androidx.compose.adaptive.navigation)
+
+//  coil
     implementation(libs.coil.compose)
 
+
 //  hilt
-    implementation(libs.dagger.hilt)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.dagger.hilt)
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.dagger.compiler)
+    /*val hilt = "2.50"
+    implementation("com.google.dagger:hilt-android:$hilt")
+    ksp("com.google.dagger:hilt-compiler:$hilt")*/
 
-//    room
+//   room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.paging)
     implementation(libs.androidx.room.ktx)
@@ -89,15 +102,30 @@ dependencies {
 
 //  gson
     implementation(libs.google.gson)
-//    lifecycle
+
+//  lifecycle
     implementation(libs.androidx.lifecycle.livedata)
     implementation(libs.androidx.lifecycle.viewmodel)
+
 //   play
     implementation(libs.google.android.play.document.scanner)
     implementation(libs.google.android.play.text.recognition)
 
+//    firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.functions)
+    implementation(libs.firebase.remoteconfig)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.appcheck)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.inappmessaging)
+    implementation(libs.firebase.inappmessaging.display)
 
-//    testing dependencies
+
+//  testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -106,3 +134,4 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
