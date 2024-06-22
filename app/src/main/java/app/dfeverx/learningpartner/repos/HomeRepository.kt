@@ -7,9 +7,9 @@ import javax.inject.Inject
 
 class HomeRepository @Inject constructor(private val appDatabase: AppDatabase) {
     suspend fun addNote(pdfUri: String): Long {
-        val si = StudyNote(id = (0..1000).random().toLong())
+        val si = StudyNote(id = "", docUrl = "")
         si.summary = pdfUri
-        return appDatabase.studyNotesDao().addNote(si)
+        return /*appDatabase.studyNotesDao().addStudyNote(si)*/0
 
     }
 

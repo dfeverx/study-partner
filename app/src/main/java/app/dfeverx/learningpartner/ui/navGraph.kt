@@ -6,10 +6,12 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import app.dfeverx.learningpartner.ui.screens.analytics.Analytics
+import androidx.navigation.navDeepLink
+import app.dfeverx.learningpartner.ui.screens.statistics.Statistics
 import app.dfeverx.learningpartner.ui.screens.home.Home
 import app.dfeverx.learningpartner.ui.screens.levels.Levels
 import app.dfeverx.learningpartner.ui.screens.notes.NoteDetails
+import app.dfeverx.learningpartner.ui.screens.onboarding.Onboarding
 import app.dfeverx.learningpartner.ui.screens.play.Play
 
 
@@ -18,22 +20,26 @@ fun appNavHost(
     startDestination: String = Screens.Home.route,
     navController: NavHostController,
 ) {
+    val uri = "ninaiva://app"
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+
+        composable(Screens.Onboarding.route) {
+            Onboarding(navController)
+        }
         composable(Screens.Home.route) {
             Home(navController)
         }
-        composable(Screens.NoteDetails.route) {
 
-        }
         composable(
             route = Screens.NoteDetails.route + "/{noteId}",
+            deepLinks = listOf(navDeepLink { uriPattern = "$uri/noteId={noteId}" }),
             arguments = listOf(
                 navArgument("noteId") {
-                    type = NavType.LongType
-                    defaultValue = 0 // Your parameter goes here
+                    type = NavType.StringType
+                    defaultValue = ""// Your parameter goes here
                 },
             ),
         ) {
@@ -51,10 +57,18 @@ fun appNavHost(
             Levels(navController)
         }
         composable(
-            route = Screens.Play.route + "/{levelId}",
+            route = Screens.Play.route + "/{noteId}/{levelId}/{stage}",
             arguments = listOf(
+                navArgument("noteId") {
+                    type = NavType.StringType
+                    defaultValue = "" // Your parameter goes here
+                },
                 navArgument("levelId") {
                     type = NavType.LongType
+                    defaultValue = 0 // Your parameter goes here
+                },
+                navArgument("stage") {
+                    type = NavType.IntType
                     defaultValue = 0 // Your parameter goes here
                 },
             ),
@@ -63,8 +77,35 @@ fun appNavHost(
                 navController
             )
         }
-        composable(route = Screens.Analytics.route) {
-            Analytics(navController = navController)
+        composable(route = Screens.Statistics.route + "/{noteId}/{levelId}/{score}/{attemptCount}/{totalNumberOfQuestions}/{stage}",
+            arguments = listOf(
+                navArgument("noteId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("levelId") {
+                    type = NavType.LongType
+                    defaultValue = 0
+                },
+                navArgument("score") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("attemptCount") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("totalNumberOfQuestions") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                },
+                navArgument("stage") {
+                    type = NavType.IntType
+                    defaultValue = 0
+                }
+            )
+        ) {
+            Statistics(navController = navController)
         }
 
     }

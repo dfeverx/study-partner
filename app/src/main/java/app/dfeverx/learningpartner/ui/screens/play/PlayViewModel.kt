@@ -22,14 +22,17 @@ class PlayViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val TAG = "PlayViewModel"
-    private val _uiState = MutableStateFlow(PlayUiState())
-    val uiState: StateFlow<PlayUiState> = _uiState.asStateFlow()
     private val levelId: Long = checkNotNull(savedStateHandle["levelId"])
+    private val stage: Int = checkNotNull(savedStateHandle["stage"])
+
+    private val _uiState = MutableStateFlow(PlayUiState(stage))
+    val uiState: StateFlow<PlayUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            playRepository.questionsByLevel(levelId)?.let {
+            playRepository.questionsByLevelId(levelId).let {
                 _uiState.value = PlayUiState(
+                    stage = stage,
                     questions = it,
                     totalQuestionSize = it.size,
                     currentQuestionIndex = 0
@@ -40,9 +43,25 @@ class PlayViewModel @Inject constructor(
     }
 
 
+    //    return true when the attempt is correct
+    fun validateAttempt(): Boolean {
+        val currentQuestion = _uiState.value.currentQuestion()
+        val result = _uiState.value.validateAttempt()
+        // update the question attempt
+        viewModelScope.launch {
+            currentQuestion?.let {
+                playRepository.updateAttemptInQuestion(
+                    questionId = it.id,
+                    updatedScore = if (result) it.score + 1 else it.score - 1
+                )
+            }
+        }
+        return result
+    }
+
     fun handleNextQuestion() {
         Log.d(TAG, "handleNext:  " + Gson().toJson(_uiState.value).toString())
-        _uiState.value.attempt = listOf()
+        _uiState.value.attempt = listOf()//resetting attempt
         if (_uiState.value.totalQuestionSize - 1 > _uiState.value.currentQuestionIndex) {
             _uiState.update { currentState ->
                 currentState.copy(currentQuestionIndex = currentState.currentQuestionIndex + 1)
@@ -50,7 +69,7 @@ class PlayViewModel @Inject constructor(
         }
     }
 
-    fun handleAttempt(selectedOption: Option) {
+    fun handleOptionSelection(selectedOption: Option) {
         Log.d(TAG, "handleAttempt: $selectedOption")
         val attemptInAttempt =
             _uiState.value.attempt.find { attempt -> attempt.content == selectedOption.content }
@@ -60,10 +79,8 @@ class PlayViewModel @Inject constructor(
 
             } else {
                 currentState.copy(attempt = listOf(selectedOption))
-
             }
         }
-
     }
 
 

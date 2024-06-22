@@ -17,17 +17,20 @@ import app.dfeverx.learningpartner.db.converter.OptionTypeConverter
 )
 class Question(
     @PrimaryKey(autoGenerate = false)
-    val id: Long,
-    val studyNoteId: Long,
+    val id: String,
+    val studyNoteId: String,
     val statement: String,
     @TypeConverters(OptionTypeConverter::class)
     val options: List<Option>,
-    val difficulty: Int,//max 10 min 1
+    val difficulty: Int,// max 10 min 1
     val explanation: String,
-    val time: Long,
-    val level:Int=0
-) {
+
+    ) {
     var flagged = false
-    var correctAttempts = 0
+    var lastAttemptedIn: Long = 0
+
+    var repetitions: Int = 0
+//    if the attempt is correct it increase by one other wise decrease by one
+    var score:Int = 0
 }
 

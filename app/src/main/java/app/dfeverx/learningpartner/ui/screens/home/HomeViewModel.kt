@@ -17,11 +17,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.ocpsoft.prettytime.PrettyTime
+import java.text.SimpleDateFormat
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val homeRepository: HomeRepository) : ViewModel() {
-    private  val TAG = "HomeViewModel"
+class HomeViewModel @Inject constructor(
+    private val homeRepository: HomeRepository,
+    private val prettyTime: PrettyTime
+) : ViewModel() {
+    private val TAG = "HomeViewModel"
     private val _studyNotes: MutableStateFlow<List<StudyNote>> = MutableStateFlow(emptyList())
     val studyNotes: StateFlow<List<StudyNote>>
         get() = _studyNotes
@@ -46,6 +52,14 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
         }
     }
 
+    fun formatTime(time: Long): String {
+        val date = Date(time )
+       /* val currentDate = Date()
+        val dateFormat = SimpleDateFormat("yyyyMMdd")
+        val isSameDate = dateFormat.format(date) == dateFormat.format(currentDate)*/
+        return prettyTime.format(date)
+    }
+
     fun handleCategorySelection(value: String) {
         TODO("Not yet implemented")
     }
@@ -53,7 +67,7 @@ class HomeViewModel @Inject constructor(private val homeRepository: HomeReposito
     fun addNote(pdfUri: String) {
         Log.d(TAG, "addNote: $pdfUri")
         viewModelScope.launch(Dispatchers.Main) {
-           val r= homeRepository.addNote(pdfUri)
+            val r = homeRepository.addNote(pdfUri)
             Log.d(TAG, "addNote: $r")
         }
 

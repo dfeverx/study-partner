@@ -54,7 +54,7 @@ fun NoteDetails(navController: NavHostController) {
                         .padding(start = 8.dp)
                         .clip(MaterialTheme.shapes.extraLarge)
                         .clickable {
-                            navController.popBackStack()
+                            navController.navigateUp()
                         }
                         .padding(8.dp),
                 )
@@ -75,7 +75,14 @@ fun NoteDetails(navController: NavHostController) {
         ) {
 
             item {
-                ProgressCard(continuePlay = { navController.navigate(Screens.Levels.route + "/" + "5") })
+                ProgressCard(
+                    modifier = Modifier,
+                    levelStage = noteDetails.currentStage - 1,
+                    score = noteDetails.score,
+                    accuracy = 30,
+                    levelProgress = ((noteDetails.currentStage - 1)) / noteDetails.totalLevel.toFloat(),
+                    isPlayButtonVisible = true,
+                    continuePlay = { navController.navigate(Screens.Levels.route + "/" + noteId) })
             }
             item {
                 NoteHeaderDetails(noteDetails)
@@ -119,17 +126,19 @@ fun NoteHeaderDetails(noteDetails: StudyNote) {
         )
         Text(
             modifier = Modifier
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 16.dp)
                 .padding(top = 8.dp, bottom = 4.dp),
             text = "Key points:",
             style = MaterialTheme.typography.labelSmall
         )
 
-        Text(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            text = noteDetails.summary,
-            style = MaterialTheme.typography.bodyLarge
-        )
+        noteDetails.keyPoints.forEach {
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                text = it,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
 
 
     }

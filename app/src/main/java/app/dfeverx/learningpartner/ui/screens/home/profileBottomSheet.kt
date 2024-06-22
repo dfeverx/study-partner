@@ -23,10 +23,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.dfeverx.learningpartner.ui.components.ClickableItem
 import app.dfeverx.learningpartner.ui.screens.home.profile.ProfileInfo
+import com.google.firebase.auth.FirebaseUser
 
 
 @Composable
 fun UserProfileBottomSheetContent(
+    userProfile:FirebaseUser?,
     navHostController: NavHostController,
     isUserProfile: Boolean,
     actionDone: () -> Unit, newConversation: () -> Unit
@@ -65,7 +67,7 @@ fun UserProfileBottomSheetContent(
     ) {
         item {
             ProfileInfo(
-//                userProfile,
+                userProfile,
                 isUserProfile,
 //                artWorkViewModel.isPro.collectAsState(),
 //                isPremiumPlanVisible = artWorkViewModel.isPremiumPlanVisible(),

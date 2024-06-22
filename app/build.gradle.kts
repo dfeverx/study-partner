@@ -9,6 +9,7 @@ plugins {
 }
 
 android {
+
     namespace = "app.dfeverx.learningpartner"
     compileSdk = 34
 
@@ -73,23 +74,29 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.compose.icons)
 
-//adaptive ui
+//  adaptive ui
     implementation(libs.androidx.compose.adaptive)
     implementation(libs.androidx.compose.adaptive.layout)
     implementation(libs.androidx.compose.adaptive.navigation)
+//    implementation(libs.androidx.compose.adaptive.navigation.suite)
+
+//    accompanist
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
+    implementation(libs.accompanist.permissions)
 
 //  coil
     implementation(libs.coil.compose)
 
+//    lottie
+    implementation(libs.lottie.compose)
 
 //  hilt
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.dagger.hilt)
+
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.dagger.compiler)
-    /*val hilt = "2.50"
-    implementation("com.google.dagger:hilt-android:$hilt")
-    ksp("com.google.dagger:hilt-compiler:$hilt")*/
 
 //   room
     implementation(libs.androidx.room.runtime)
@@ -103,13 +110,22 @@ dependencies {
 //  gson
     implementation(libs.google.gson)
 
+//    time formatting
+    implementation(libs.android.prettytime)
+
+
 //  lifecycle
     implementation(libs.androidx.lifecycle.livedata)
     implementation(libs.androidx.lifecycle.viewmodel)
 
 //   play
-    implementation(libs.google.android.play.document.scanner)
-    implementation(libs.google.android.play.text.recognition)
+    implementation(libs.google.play.document.scanner)
+    implementation(libs.google.play.text.recognition)
+    implementation(libs.google.play.services.auth)
+    implementation(libs.google.play.update)
+    implementation(libs.google.play.update.ktx)
+    implementation(libs.google.play.review)
+    implementation(libs.google.play.review.ktx)
 
 //    firebase
     implementation(platform(libs.firebase.bom))
@@ -123,7 +139,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.inappmessaging)
     implementation(libs.firebase.inappmessaging.display)
-
+    implementation(libs.firebase.messaging.ktx)
 
 //  testing dependencies
     testImplementation(libs.junit)

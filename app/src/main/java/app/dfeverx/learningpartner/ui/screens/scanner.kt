@@ -2,6 +2,7 @@ package app.dfeverx.learningpartner.ui.screens
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DocumentScanner
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.FloatingActionButtonElevation
@@ -22,14 +22,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.google.mlkit.vision.common.InputImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.io.IOException
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Scanner(
     modifier: Modifier = Modifier,
@@ -37,11 +39,18 @@ fun Scanner(
     elevation: FloatingActionButtonElevation = FloatingActionButtonDefaults.elevation(
         defaultElevation = 0.dp
     ),
-    rawPdfUri: (Uri,String) -> Unit
+    rawPdfUri: (Uri, String) -> Unit
 ) {
+    val notificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        rememberPermissionState(
+            android.Manifest.permission.POST_NOTIFICATIONS
+        )
+    } else {
+        null
+    }
     val options = GmsDocumentScannerOptions.Builder()
         .setGalleryImportAllowed(false)
-        .setPageLimit(2)
+        .setPageLimit(5)
         .setResultFormats(
             GmsDocumentScannerOptions.RESULT_FORMAT_JPEG,
             GmsDocumentScannerOptions.RESULT_FORMAT_PDF
@@ -63,36 +72,36 @@ fun Scanner(
                 GmsDocumentScanningResult.fromActivityResultIntent(
                     result.data
                 )
-            documentScanningResult?.pages?.let { pages ->
-                for (page in pages) {
-                    val imageUri = page.imageUri
-                    Log.d("TAG", "DocumentScanner: $imageUri")
-                    val image: InputImage
-                    try {
-                        image = InputImage.fromFilePath(activity, imageUri)
-                        recognizer.process(image)
-                            .addOnSuccessListener { visionText ->
-                                // Task completed successfully
-                                // ...
-                                Log.d("TAG", "DocumentScanner: text ${visionText.text}")
-                                rawPdfUri(imageUri,visionText.text)
-                            }
-                            .addOnFailureListener { e ->
-                                // Task failed with an exception
-                                // ...
-                                Log.d("TAG", "DocumentScanner: error text ${e.message}")
-                            }
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                    // Handle the image URI
-                }
-            }
+            /*  documentScanningResult?.pages?.let { pages ->
+                  for (page in pages) {
+                      val imageUri = page.imageUri
+                      Log.d("TAG", "DocumentScanner: $imageUri")
+                      val image: InputImage
+                      try {
+                          image = InputImage.fromFilePath(activity, imageUri)
+                          recognizer.process(image)
+                              .addOnSuccessListener { visionText ->
+                                  // Task completed successfully
+                                  // ...
+                                  Log.d("TAG", "DocumentScanner: text ${visionText.text}")
+                                  rawPdfUri(imageUri,visionText.text)
+                              }
+                              .addOnFailureListener { e ->
+                                  // Task failed with an exception
+                                  // ...
+                                  Log.d("TAG", "DocumentScanner: error text ${e.message}")
+                              }
+                      } catch (e: IOException) {
+                          e.printStackTrace()
+                      }
+                      // Handle the image URI
+                  }
+              }*/
             documentScanningResult?.pdf?.let { pdf ->
                 val pdfUri = pdf.uri
                 val pageCount = pdf.pageCount
                 Log.d("TAG", "DocumentScanner: $pdfUri")
-//                rawPdfUri(pdfUri)
+                rawPdfUri(pdfUri, "")
                 // Handle the PDF URI and page count
             }
         }
@@ -104,6 +113,11 @@ fun Scanner(
             .animateContentSize(),
         expanded = expanded,
         onClick = {
+//            ask notification permission if necessary
+            if (notificationPermission?.status?.isGranted == false) {
+                notificationPermission.launchPermissionRequest()
+                return@ExtendedFloatingActionButton
+            }
             scanner.getStartScanIntent(activity)
                 .addOnSuccessListener { intentSender ->
                     scannerLauncher.launch(

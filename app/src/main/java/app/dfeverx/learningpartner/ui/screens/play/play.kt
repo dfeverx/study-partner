@@ -10,9 +10,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,15 +24,14 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.SpeakerPhone
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -51,12 +53,17 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import app.dfeverx.learningpartner.R
 import app.dfeverx.learningpartner.models.local.Option
 import app.dfeverx.learningpartner.models.local.Question
 import app.dfeverx.learningpartner.ui.Screens
+import app.dfeverx.learningpartner.ui.components.ModernGrid
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,18 +71,17 @@ import app.dfeverx.learningpartner.ui.Screens
 fun Play(navController: NavController) {
     val playViewModel = hiltViewModel<PlayViewModel>()
     val playUiState by playViewModel.uiState.collectAsState()
-
-    val scrollBehavior =
-        TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val noteId = navController.currentBackStackEntry?.arguments?.getString("noteId")
+    val levelId = navController.currentBackStackEntry?.arguments?.getLong("levelId")
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var showResultBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val bottomSheetState =
-        rememberModalBottomSheetState(
-            skipPartiallyExpanded = true,
-            /*confirmValueChange = {
-                       Log.d("TAG", "Play: call i want to quit")
-                       false
-                   }*/
-        )
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        /*confirmValueChange = {
+                   Log.d("TAG", "Play: call i want to quit")
+                   false
+               }*/
+    )
     val progressAnimation by animateFloatAsState(
         targetValue = playUiState.progress(),
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing), label = "",
@@ -89,45 +95,44 @@ fun Play(navController: NavController) {
         Log.d("TAG", "Play: i want to quit ")
     }
     Scaffold(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection), topBar = {
-        TopAppBar(
-            modifier = Modifier/*.borderBottom()*/,
-            navigationIcon = {
-                Icon(
-                    Icons.Outlined.Close,
-                    "Go back to previous",
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .clip(MaterialTheme.shapes.extraLarge)
-                        .clickable {
-                            navController.popBackStack()
-                        }
-                        .padding(8.dp),
-                )
-            },
+        TopAppBar(modifier = Modifier/*.borderBottom()*/, navigationIcon = {
+            Icon(
+                Icons.Outlined.Close,
+                "Go back to previous",
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .clickable {
+                        navController.navigateUp()
+                    }
+                    .padding(8.dp),
+            )
+        },
 
             title = {
 
-            },
-            actions = {
+            }, actions = {
                 CircularProgressIndicator(
                     modifier = Modifier
                         .padding(16.dp)
-                        .size(28.dp), trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        .size(28.dp),
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     progress = progressAnimation
                 )
-            },
-            scrollBehavior = scrollBehavior
+            }, scrollBehavior = scrollBehavior
         )
 
     }, content = {
         LazyColumn {
             item {
-                MCQPlay(
-                    modifier = Modifier.padding(it),
-                    question = playUiState.currentQuestion(),
-                    attempts = playUiState.attempt,
-                    handleAttempt = playViewModel::handleAttempt
-                )
+                playUiState.currentQuestion()?.let { it1 ->
+                    MCQPlay(
+                        modifier = Modifier.padding(it),
+                        question = it1,
+                        attempts = playUiState.attempt,
+                        handleAttempt = playViewModel::handleOptionSelection
+                    )
+                }
             }
         }
 
@@ -139,17 +144,15 @@ fun Play(navController: NavController) {
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp)
             .padding(bottom = 8.dp)
-            .fillMaxWidth(),
-            onClick = {
+            .fillMaxWidth(), onClick = {
 
-                showResultBottomSheet = true
-            }) {
+            showResultBottomSheet = true
+        }) {
             Text(text = "Check ")
         }
     })
     if (showResultBottomSheet) {
-        ModalBottomSheet(
-            /* properties = ModalBottomSheetProperties(
+        ModalBottomSheet(/* properties = ModalBottomSheetProperties(
                  shouldDismissOnBackPress = false,
                  isFocusable = true,
                  securePolicy = SecureFlagPolicy.SecureOn
@@ -158,21 +161,24 @@ fun Play(navController: NavController) {
                 showResultBottomSheet = false
                 playViewModel.handleNextQuestion()
                 if (playUiState.totalQuestionSize - 1 == playUiState.currentQuestionIndex) {
-                    navController.popBackStack()
-                    navController.navigate(Screens.Analytics.route)
+                    navController.popBackStack()/*/{levelId}/{score}/{attemptCount}/{totalNumberOfQuestions}/{stage}*/
+                    navController.navigate(Screens.Statistics.route + "/${noteId}/" + levelId + "/" + playUiState.score + "/" + playUiState.totalQuestionsAttempted + "/" + playUiState.totalQuestionSize + "/" + playUiState.stage)
                 }
             },
-            sheetState = bottomSheetState
+            sheetState = bottomSheetState,
+            windowInsets = BottomSheetDefaults.windowInsets.only(WindowInsetsSides.Bottom)
+
         ) {
 
-            AttemptResultDialogueContent(
-                modifier = Modifier, isCorrectAttempt = playUiState.validateAttempt(),
+            AttemptResultDialogueContent(modifier = Modifier,
+                currentQuestion = playUiState.currentQuestion(),
+                isCorrectAttempt = playViewModel.validateAttempt(),
                 continueToNext = {
                     showResultBottomSheet = false
                     playViewModel.handleNextQuestion()
                     if (playUiState.totalQuestionSize - 1 == playUiState.currentQuestionIndex) {
-                        navController.popBackStack()
-                        navController.navigate(Screens.Analytics.route)
+                        navController.popBackStack()/*/{levelId}/{score}/{attemptCount}/{totalNumberOfQuestions}/{stage}*/
+                        navController.navigate(Screens.Statistics.route + "/${noteId}/" + levelId + "/" + playUiState.score + "/" + playUiState.totalQuestionsAttempted + "/" + playUiState.totalQuestionSize + "/" + playUiState.stage)
                     }
                 })
 
@@ -183,10 +189,7 @@ fun Play(navController: NavController) {
 
 @Composable
 fun MCQPlay(
-    modifier: Modifier,
-    question: Question,
-    attempts: List<Option>,
-    handleAttempt: (Option) -> Unit
+    modifier: Modifier, question: Question, attempts: List<Option>, handleAttempt: (Option) -> Unit
 ) {
     Column(modifier = modifier.padding(vertical = 16.dp, horizontal = 16.dp)) {
         Row {
@@ -197,8 +200,7 @@ fun MCQPlay(
                     modifier = Modifier
 //                        .padding(start = 8.dp)
                         .clip(MaterialTheme.shapes.extraLarge)
-                        .clickable {
-                        },
+                        .clickable {},
                 )
                 Text(modifier = Modifier.padding(start = 8.dp), text = "Read loud")
             }
@@ -227,15 +229,13 @@ fun MCQOption(option: Option, attempts: List<Option>, handleAttempt: (Option) ->
         .background(if (result == null) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant)
         .fillMaxWidth(),
 //        colors = ButtonColors(containerColor = MaterialTheme.colorScheme.onSurface),
-        shape = MaterialTheme.shapes.small,
-        onClick = { handleAttempt(option) }) {
+        shape = MaterialTheme.shapes.small, onClick = { handleAttempt(option) }) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadioButton(
-                modifier = Modifier.padding(0.dp),
+            RadioButton(modifier = Modifier.padding(0.dp),
                 selected = result != null,
                 onClick = { handleAttempt(option) })
             Text(
@@ -255,7 +255,8 @@ fun MCQOption(option: Option, attempts: List<Option>, handleAttempt: (Option) ->
 fun AttemptResultDialogueContent(
     modifier: Modifier = Modifier,
     isCorrectAttempt: Boolean = false,
-    continueToNext: () -> Unit
+    currentQuestion: Question?,
+    continueToNext: () -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -263,45 +264,78 @@ fun AttemptResultDialogueContent(
             .padding(horizontal = 16.dp)
     ) {
         item {
-            Row(
-                modifier = Modifier.padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(if (isCorrectAttempt) R.raw.right else R.raw.wrong))
+            val logoAnimationState = animateLottieCompositionAsState(
+                composition = composition, iterations = 1, restartOnPlay = false
+            )
+            ModernGrid(content = {
+                /*Icon(
+                    modifier = Modifier.fillMaxSize(),
+                    imageVector = Icons.Outlined.Lock,
+                    contentDescription = ""
+                )*/
+                LottieAnimation(modifier = Modifier.fillMaxSize(),
+                    composition = composition,
+                    progress = { logoAnimationState.progress })
+            }){}
+        }
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Icon(
-                    if (isCorrectAttempt) Icons.Outlined.ThumbUp else Icons.Outlined.ThumbDown,
-                    "Read loud",
-                    modifier = Modifier
-                        .size(36.dp)
-//                        .padding(start = 8.dp)
-                        .clip(MaterialTheme.shapes.extraLarge)
-                        .clickable {
-                        },
-                )
+
                 Text(
                     modifier = Modifier.padding(start = 16.dp),
                     text = if (isCorrectAttempt) "Right" else "Wrong",
                     style = MaterialTheme.typography.displaySmall
                 )
+
             }
         }
         item {
             Column(
                 modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
                     .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(8.dp)
+                    .padding(16.dp)
             ) {
                 Text(
                     modifier = Modifier.padding(bottom = 4.dp),
-                    text = "Explanation",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                HorizontalDivider()
-                Text(
-                    text = "Newtown laws of motion details the laws in physicsNewtown laws ...",
+                    text = "Right answer:",
                     style = MaterialTheme.typography.bodyLarge
                 )
+                if (currentQuestion != null) {
+                    Text(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        text = currentQuestion.options.first { op -> op.isCorrect }.content,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    text = "Explanation:",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                currentQuestion?.explanation?.let {
+                    Text(
+                        text = it, style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
         item {
@@ -324,8 +358,10 @@ fun PlayPreview() {
 
 @Preview
 @Composable
-fun PlayCorrectAnsPreview() {
-    AttemptResultDialogueContent() {}
+fun PlayCorrectAnsPreview() {/* AttemptResultDialogueContent(
+         continueToNext = {},
+         currentQuestion = playUiState.currentQuestion()
+     )*/
 }
 
 
